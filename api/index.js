@@ -1,7 +1,6 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import cookieParser from 'cookie-parser'
 import userRoutes from './routes/users.js'
 import videoRoutes from './routes/videos.js'
 import commentRoutes from './routes/comments.js'
@@ -13,12 +12,11 @@ const app = express()
 const PORT = process.env.PORT || 3001
 const CONNECTION_URL = process.env.CONNECTION_URL
 
-app.use(cookieParser())
-app.use(express.json())
-app.use('/api/users', userRoutes)
-app.use('/api/auth', authRoutes)
-app.use('/api/videos', videoRoutes)
-app.use('/api/comments', commentRoutes)
+app.use(express.json({ limit: '30mb' }))
+app.use('/users', userRoutes)
+app.use('/auth', authRoutes)
+app.use('/videos', videoRoutes)
+app.use('/comments', commentRoutes)
 
 app.use((err, req, res, next) => {
     const status = err.status || 500;

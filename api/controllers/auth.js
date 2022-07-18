@@ -1,39 +1,44 @@
-import mongoose from "mongoose"
-import User from '../models/User.js'
-import bcrypt from 'bcryptjs'
-import createError from "../error.js";
-import jwt from "jsonwebtoken";
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import createError from '../error.js';
+import User from '../models/User.js';
 
-export const signup = async (req, res, next) => {
+export const signUp = async (req, res, next) => {
+    const { name, email, password, confirmPassword } = req.body
     try {
-        const salt = bcrypt.genSaltSync(10);
-        const hash = bcrypt.hashSync(req.body.password, salt)
-        const newUser = new User({...req.body, password: hash})
+        const existingUser = await User.findOne({ email });
 
-        await newUser.save();
-        res.status(200).send('User created')
+        if(existingUser) return next(createError(400, 'User already exists'))
+
+        if(password !== confirmPassword) return next(createError(400, "Passwords don't match"))
+        
+        const hashedPassword = await bcrypt.hash(password, 12)
+
+        const result = await User.create( { name, email, password: hashedPassword })
+
+        const token = jwt.sign( { email: result.email, id: result._id }, process.env.JWT, { expiresIn: '1h' })
+
+        res.status(200).json( { result, token })
     } catch (err) {
         next(err)
     }
 }
 
-export const signin = async (req, res, next) => {
-    let { name } = req.body
+export const signIn = async (req, res, next) => {
+    const { email, password } = req.body
 
     try {
-        const user = await User.findOne({ name })
+        const user = await User.findOne( { email })
+
         if(!user) return next(createError(404, 'User not found'))
 
-        const isCorrect = await bcrypt.compare(req.body.password, user.password)
-        if(!isCorrect) return next(createError(404, 'Wrong credentials'))
+        const isPasswordCorrect = await bcrypt.compare(password, user.password)
 
-        const token = jwt.sign({id: user._id}, process.env.JWT)
-        const { password, ...others} = user._doc
+        if(!isPasswordCorrect) return next(createError(400, 'Invalid credentials'))
 
-        res.cookie('access_token', token, {
-            httpOnly: true
-        }).status(200).json(others)
+        const token = jwt.sign( { email: user.email, id: user._id }, process.env.JWT, { expiresIn: '1h' })
 
+        res.status(200).json( { result: user, token })
     } catch (err) {
         next(err)
     }
