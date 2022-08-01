@@ -1,13 +1,14 @@
 import React from 'react'
 import { AppBar, Box, Toolbar, Typography, Button, IconButton } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
+import styles from './Navbar.module.css'
 
 const Navbar = () => {
 
   return (
-    <Box sx={{ flexGrow: 1, marginLeft: 20, marginTop: 2, marginRight: 20 }}>
+    <Box className={styles.box} sx={{ flexGrow: 1 }}>
       <AppBar position="static">
-        <Toolbar>
+        <Toolbar className={styles.toolbar}>
           <IconButton
             size="large"
             edge="start"

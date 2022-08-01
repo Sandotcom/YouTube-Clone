@@ -6,12 +6,12 @@ import VisibilityOff from '@mui/icons-material/VisibilityOff'
 const Input = ({ name, label, handleChange, autoFocus, type, handleShowPassword }) => {
   return (
     <Grid item>
-      <TextField 
+      <TextField
+        sx={{ width: '100%'}}
         name={name}
         onChange={handleChange}
         variant="outlined"
         required
-        fullWidth
         label={label}
         autoFocus={autoFocus}
         type={type}
